@@ -98,7 +98,7 @@
           "query": [
             {"key":"page","value":"1"},
             {"key":"pageSize","value":"10"},
-            {"key":"employeeId","value":""},
+            {"key":"employeeId","value":"1"},
             {"key":"documentTypeId","value":"2"}
           ]
         }
