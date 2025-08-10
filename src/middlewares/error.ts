@@ -1,38 +1,42 @@
-// src/middlewares/error.ts
 import { NextFunction, Request, Response } from 'express';
-import { mapPgError } from '../utils/pg-error-map.js';
 
 export class HttpError extends Error {
-  status: number;
-  details?: unknown;
-  constructor(status: number, message: string, details?: unknown) {
+  constructor(
+    public status: number,
+    message: string,
+    public details?: unknown
+  ) {
     super(message);
-    this.status = status;
-    this.details = details;
   }
+}
+
+function isPgError(err: any): err is { code?: string; detail?: string; constraint?: string } {
+  return typeof err?.code === 'string';
+}
+
+function mapPgError(err: any) {
+  if (err.code === '23505') return new HttpError(409, 'Conflict: duplicate', { constraint: err.constraint });
+  if (err.code === '23503') return new HttpError(400, 'Invalid reference', { constraint: err.constraint });
+  if (err.code === '22P02') return new HttpError(400, 'Invalid input');
+  if (['ETIMEDOUT', 'ECONNREFUSED'].includes(err.code)) return new HttpError(503, 'DB unavailable', { code: err.code });
+  return new HttpError(500, 'Database error', { code: err.code, message: err.message, detail: err.detail });
 }
 
 export function errorHandler(err: any, req: Request, res: Response, _next: NextFunction) {
   let httpErr: HttpError;
 
-  // Mapear erros do Postgres por code
-  if (err && typeof err === 'object' && 'code' in err && err.code) {
-    httpErr = mapPgError(err);
-  } else if (err instanceof HttpError) {
+  if (err instanceof HttpError) {
     httpErr = err;
+  } else if (err?.name === 'ZodError') {
+    httpErr = new HttpError(400, 'Validation error', (err as any).flatten?.());
+  } else if (isPgError(err)) {
+    httpErr = mapPgError(err);
   } else {
-    httpErr = new HttpError(500, 'Internal Server Error');
+    httpErr = new HttpError(500, 'Unexpected error');
   }
 
-  // Log detalhado sempre
-  console.error('[ERROR]', req.method, req.originalUrl);
-  if (err?.message) console.error(' message:', err.message);
-  if (err?.code) console.error(' code:', err.code);
-  if (err?.detail) console.error(' detail:', err.detail);
-  if (err?.stack) console.error(err.stack);
+  // Log básico (mascare PII se necessário)
+  console.error('[ERROR]', req.method, req.originalUrl, { code: (err as any)?.code, message: err?.message });
 
-  res.status(httpErr.status).json({
-    error: httpErr.message,
-    details: httpErr.details
-  });
+  res.status(httpErr.status).json({ error: httpErr.message, details: httpErr.details });
 }
