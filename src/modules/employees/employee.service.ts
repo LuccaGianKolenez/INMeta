@@ -1,5 +1,5 @@
-import { query, tx } from '../../db/db';
-import { HttpError } from '../../middlewares/error';
+import { query, tx } from '../../db/db.js';
+import { HttpError } from '../../middlewares/error.js';
 
 export const EmployeeService = {
   async linkDocs(employeeId: number, toAdd: number[] = [], toRemove: number[] = []) {
@@ -13,7 +13,7 @@ export const EmployeeService = {
           `SELECT id FROM document_types WHERE id IN (${placeholders})`,
           toAdd
         );
-        const valid = new Set(rows.map(r => r.id));
+        const valid = new Set(rows.map((r:any) => r.id));
         for (const dtId of toAdd) {
           if (!valid.has(dtId)) continue;
           await c.query(
@@ -57,8 +57,8 @@ export const EmployeeService = {
 
     return {
       employeeId,
-      sent: rows.filter(r => r.status === 'SENT'),
-      pending: rows.filter(r => r.status === 'PENDING')
+      sent: rows.filter((r:any) => r.status === 'SENT'),
+      pending: rows.filter((r:any) => r.status === 'PENDING')
     };
   }
 };

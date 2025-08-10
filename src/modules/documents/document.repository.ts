@@ -1,5 +1,5 @@
-import { query } from '../../db/db';
-import { getPagination } from '../../utils/pagination';
+import { query } from '../../db/db.js';
+import { getPagination } from '../../utils/pagination.js';
 
 export const DocumentRepo = {
   async send(employeeId: number, documentTypeId: number, name: string) {

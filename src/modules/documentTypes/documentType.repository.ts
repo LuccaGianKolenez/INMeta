@@ -1,4 +1,4 @@
-import { query } from '../../db/db';
+import { query } from '../../db/db.js';
 
 export const DocumentTypeRepo = {
   async create(name: string) {
@@ -7,5 +7,10 @@ export const DocumentTypeRepo = {
       [name]
     );
     return rows[0]?.id;
+  },
+
+  async listAll() {
+    const { rows } = await query(`SELECT id, name FROM document_types ORDER BY name ASC`);
+    return rows;
   }
 };

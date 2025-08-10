@@ -1,4 +1,4 @@
-import { query } from '../../db/db';
+import { query } from '../../db/db.js';
 
 export const EmployeeRepo = {
   async create(data: { name: string; cpf: string; hiredAt: string }) {

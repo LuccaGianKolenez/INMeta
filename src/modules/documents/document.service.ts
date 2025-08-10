@@ -1,6 +1,6 @@
-import { query } from '../../db/db';
-import { HttpError } from '../../middlewares/error';
-import { DocumentRepo } from './document.repository';
+import { query } from '../../db/db.js';
+import { HttpError } from '../../middlewares/error.js';
+import { DocumentRepo } from './document.repository.js';
 
 export const DocumentService = {
   async send(employeeId: number, documentTypeId: number, name: string) {

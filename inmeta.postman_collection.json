@@ -1,0 +1,115 @@
+{
+  "info": {
+    "name": "INMETA Docs API",
+    "_postman_id": "0b2a650d-0c3c-4a1a-9f2a-aaaa0000bbbb",
+    "description": "Coleção para testar a API de Documentação de Colaboradores",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "Document Types - Create",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"CPF\"\n}"
+        },
+        "url": "{{baseUrl}}/document-types"
+      }
+    },
+    {
+      "name": "Document Types - List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/document-types"
+      }
+    },
+    {
+      "name": "Employees - Create",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Colaborador X\",\n  \"cpf\": \"12345678901\",\n  \"hiredAt\": \"2024-01-01\"\n}"
+        },
+        "url": "{{baseUrl}}/employees"
+      }
+    },
+    {
+      "name": "Employees - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Colaborador XZ\"\n}"
+        },
+        "url": "{{baseUrl}}/employees/1"
+      }
+    },
+    {
+      "name": "Employees - Link required docs",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"add\": [1,2]\n}"
+        },
+        "url": "{{baseUrl}}/employees/1/required-docs"
+      }
+    },
+    {
+      "name": "Documents - Send",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"documentTypeId\": 1,\n  \"name\": \"cpf_frente.pdf\"\n}"
+        },
+        "url": "{{baseUrl}}/employees/1/documents"
+      }
+    },
+    {
+      "name": "Employees - Status",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/employees/1/status"
+      }
+    },
+    {
+      "name": "Documents - Pending (paginated)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/documents/pending?page=1&pageSize=10&documentTypeId=2",
+          "host": ["{{baseUrl}}"],
+          "path": ["documents","pending"],
+          "query": [
+            {"key":"page","value":"1"},
+            {"key":"pageSize","value":"10"},
+            {"key":"employeeId","value":""},
+            {"key":"documentTypeId","value":"2"}
+          ]
+        }
+      }
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    }
+  ]
+}
