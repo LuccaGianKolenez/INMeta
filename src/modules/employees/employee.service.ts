@@ -30,7 +30,9 @@ export const EmployeeService = {
         const placeholders = toRemove.map((_, i) => `$${i+2}`).join(',');
         await c.query(
           `DELETE FROM employee_documents
-           WHERE employee_id = $1 AND document_type_id IN (${placeholders})`,
+          WHERE employee_id = $1
+            AND document_type_id IN (${placeholders})
+            AND status = 'PENDING'`,
           base
         );
       }
