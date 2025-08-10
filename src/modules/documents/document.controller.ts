@@ -15,6 +15,7 @@ export const DocumentController = {
     try {
       const { page, pageSize, employeeId, documentTypeId } = (req as any).query;
       const result = await DocumentService.listPending({ page, pageSize, employeeId, documentTypeId });
+      res.setHeader('X-Total-Count', String(result.total));
       return res.json(result);
     } catch (e) { next(e); }
   }
