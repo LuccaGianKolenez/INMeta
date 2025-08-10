@@ -5,8 +5,8 @@ export const DocumentRepo = {
   async send(employeeId: number, documentTypeId: number, name: string) {
     const { rowCount } = await query(
       `UPDATE employee_documents
-         SET name = $1, status = 'SENT', sent_at = now(), updated_at = now()
-       WHERE employee_id = $2 AND document_type_id = $3`,
+        SET name = $1, status = 'SENT', sent_at = now(), updated_at = now()
+      WHERE employee_id = $2 AND document_type_id = $3 AND status = 'PENDING'`,
       [name, employeeId, documentTypeId]
     );
     return { updated: rowCount ?? 0 };

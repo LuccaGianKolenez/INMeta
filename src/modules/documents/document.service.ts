@@ -17,6 +17,9 @@ export const DocumentService = {
     if (!link.rowCount) throw new HttpError(400, 'Document type not linked to employee');
 
     const result = await DocumentRepo.send(employeeId, documentTypeId, name);
+    if (!result.updated) {
+      throw new HttpError(409, 'Document already sent');
+    }
     if (!result.updated) throw new HttpError(500, 'Unexpected: failed to update document record');
 
     return { message: 'Document sent' };
