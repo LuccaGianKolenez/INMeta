@@ -10,9 +10,17 @@ import { DocumentTypeController } from './modules/documentTypes/documentType.con
 import { sendDocSchema, listPendingSchema } from './modules/documents/document.schemas.js';
 import { DocumentController } from './modules/documents/document.controller.js';
 
+import { query } from './db/db.js';
+
 const r = Router();
 
 r.get('/health', (_req, res) => res.json({ ok: true }));
+r.get('/readyz', async (_req, res, next) => {
+  try {
+    await query('SELECT 1');
+    res.json({ ready: true });
+  } catch (e) { next(e); }
+});
 
 // Employees
 r.post('/employees', validate(createEmployeeSchema), EmployeeController.create);
