@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { pool } from './db.js';
 
-async function ensureMigrationsTable() {
+async function ensureTable() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
       version INTEGER PRIMARY KEY,
@@ -11,41 +11,39 @@ async function ensureMigrationsTable() {
   `);
 }
 
-async function appliedVersions(): Promise<Set<number>> {
+async function applied() {
   const { rows } = await pool.query<{ version: number }>('SELECT version FROM schema_migrations');
   return new Set(rows.map(r => r.version));
 }
 
-async function applyMigration(version: number, sql: string) {
+async function apply(version: number, sql: string) {
   await pool.query('BEGIN');
   try {
     await pool.query(sql);
-    await pool.query('INSERT INTO schema_migrations (version) VALUES ($1)', [version]);
+    await pool.query('INSERT INTO schema_migrations(version) VALUES ($1)', [version]);
     await pool.query('COMMIT');
-    console.log(`Applied migration ${version}`);
+    console.log(`✔ migration ${version} applied`);
   } catch (e) {
     await pool.query('ROLLBACK');
-    console.error(`Failed migration ${version}`, e);
-    process.exitCode = 1;
     throw e;
   }
 }
 
 (async () => {
-  await ensureMigrationsTable();
+  await ensureTable();
 
-  const dir = path.resolve('src/db/migrations');
+  const dir = path.join(process.cwd(), 'src', 'db', 'migrations');
   const files = fs.readdirSync(dir)
     .filter(f => /^\d+_.+\.sql$/.test(f))
-    .sort((a, b) => Number(a.split('_')[0]) - Number(b.split('_')[0]));
+    .sort();
 
-  const done = await appliedVersions();
+  const done = await applied();
 
   for (const f of files) {
-    const v = Number(f.split('_')[0]);
-    if (!done.has(v)) {
+    const version = Number(f.split('_')[0]);
+    if (!done.has(version)) {
       const sql = fs.readFileSync(path.join(dir, f), 'utf8');
-      await applyMigration(v, sql);
+      await apply(version, sql);
     }
   }
 
