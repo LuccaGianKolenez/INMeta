@@ -1,53 +1,68 @@
+import type { PoolClient } from 'pg';
 import { query } from '../../db/db.js';
-import { getPagination } from '../../utils/pagination.js';
+import { HttpError } from '../../middlewares/error.js';
 
-export const DocumentRepo = {
-  async send(employeeId: number, documentTypeId: number, name: string) {
-    const { rowCount } = await query(
-      `UPDATE employee_documents
-        SET name = $1, status = 'SENT', sent_at = now(), updated_at = now()
-      WHERE employee_id = $2 AND document_type_id = $3 AND status = 'PENDING'`,
-      [name, employeeId, documentTypeId]
-    );
-    return { updated: rowCount ?? 0 };
-  },
+export async function send(c: PoolClient, employeeId: number, documentTypeId: number, name: string) {
+  // tentativa otimista (garante concorrência): só atualiza se ainda estiver PENDING
+  const upd = await c.query(
+    `UPDATE employee_documents
+        SET status='SENT', name=$3, sent_at=NOW()
+      WHERE employee_id=$1 AND document_type_id=$2 AND status='PENDING'
+      RETURNING employee_id AS "employeeId", document_type_id AS "documentTypeId", status, name, sent_at AS "sentAt"`,
+    [employeeId, documentTypeId, name]
+  );
 
-  async listPending(filters: { employeeId?: number; documentTypeId?: number; page?: number; pageSize?: number }) {
-    const { limit, offset } = getPagination(filters.page, filters.pageSize);
+  if (upd.rowCount === 1) return upd.rows[0];
 
-    const wh: string[] = [`ed.status = 'PENDING'`];
-    const params: any[] = [];
-    let i = 1;
+  // se não atualizou, checa o motivo
+  const { rows } = await c.query(
+    `SELECT status FROM employee_documents WHERE employee_id=$1 AND document_type_id=$2`,
+    [employeeId, documentTypeId]
+  );
 
-    if (filters.employeeId) { wh.push(`ed.employee_id = $${i++}`); params.push(filters.employeeId); }
-    if (filters.documentTypeId) { wh.push(`ed.document_type_id = $${i++}`); params.push(filters.documentTypeId); }
-    const where = `WHERE ${wh.join(' AND ')}`;
-
-    const itemsSql = `
-      SELECT ed.id,
-             e.id as "employeeId", e.name as "employeeName", e.cpf,
-             dt.id as "documentTypeId", dt.name as "documentTypeName",
-             ed.status
-      FROM employee_documents ed
-      JOIN employees e ON e.id = ed.employee_id
-      JOIN document_types dt ON dt.id = ed.document_type_id
-      ${where}
-      ORDER BY ed.id ASC
-      LIMIT $${i++} OFFSET $${i++}
-    `;
-    const countSql = `
-      SELECT COUNT(*)::int AS total
-      FROM employee_documents ed
-      JOIN employees e ON e.id = ed.employee_id
-      JOIN document_types dt ON dt.id = ed.document_type_id
-      ${where}
-    `;
-
-    const [{ rows: items }, { rows: [c] }] = await Promise.all([
-      query(itemsSql, [...params, limit, offset]),
-      query<{ total: number }>(countSql, params)
-    ]);
-
-    return { items, page: filters.page ?? 1, pageSize: limit, total: c?.total ?? 0 };
+  if (!rows.length) {
+    throw new HttpError(400, 'Document type not linked to employee');
   }
-};
+  if (rows[0].status === 'SENT') {
+    throw new HttpError(409, 'Document already sent');
+  }
+  throw new HttpError(500, 'Unexpected state');
+}
+
+export async function listPending(page: number, pageSize: number, filters: { employeeId?: number; documentTypeId?: number }) {
+  const off = (page - 1) * pageSize;
+  const where: string[] = [`ed.status='PENDING'`];
+  const params: any[] = [];
+  let p = 1;
+
+  if (filters.employeeId) {
+    where.push(`ed.employee_id = $${p++}`);
+    params.push(filters.employeeId);
+  }
+  if (filters.documentTypeId) {
+    where.push(`ed.document_type_id = $${p++}`);
+    params.push(filters.documentTypeId);
+  }
+
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+  const countSql = `SELECT COUNT(*)::int AS total
+                      FROM employee_documents ed
+                      ${whereSql}`;
+  const dataSql = `SELECT ed.employee_id AS "employeeId",
+                          ed.document_type_id AS "documentTypeId",
+                          dt.name AS "documentTypeName",
+                          ed.status
+                     FROM employee_documents ed
+                     JOIN document_types dt ON dt.id = ed.document_type_id
+                     ${whereSql}
+                     ORDER BY ed.employee_id, ed.document_type_id
+                     LIMIT ${pageSize} OFFSET ${off}`;
+
+  const [count, data] = await Promise.all([
+    query<{ total: number }>(countSql, params),
+    query(dataSql, params),
+  ]);
+
+  return { data: data.rows, page, pageSize, total: count.rows[0].total };
+}

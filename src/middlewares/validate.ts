@@ -1,21 +1,13 @@
-import { AnyZodObject, ZodError } from 'zod';
-import { Request, Response, NextFunction } from 'express';
-import { HttpError } from './error.js';
+import type { RequestHandler } from 'express';
+import { ZodSchema } from 'zod';
 
-export const validate =
-  (schema: AnyZodObject) =>
-  (req: Request, _res: Response, next: NextFunction) => {
+export function validate(schema: ZodSchema): RequestHandler {
+  return (req, _res, next) => {
     try {
-      const parsed = schema.parse({ body: req.body, params: req.params, query: req.query });
-      (req as any).body = parsed.body ?? req.body;
-      (req as any).params = parsed.params ?? req.params;
-      (req as any).query = parsed.query ?? req.query;
+      req.body = schema.parse(req.body);
       next();
     } catch (e) {
-      if (e instanceof ZodError) {
-        const flat = e.flatten();
-        return next(new HttpError(400, 'Validation error', flat));
-      }
       next(e);
     }
   };
+}
