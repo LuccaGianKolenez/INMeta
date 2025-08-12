@@ -1,14 +1,15 @@
 CREATE TABLE IF NOT EXISTS employee_documents (
-  id                SERIAL PRIMARY KEY,
-  employee_id       INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
-  document_type_id  INTEGER NOT NULL REFERENCES document_types(id) ON DELETE CASCADE,
-  name              TEXT,
-  status            TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','SENT')),
-  sent_at           TIMESTAMPTZ,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (employee_id, document_type_id),
-  CHECK (
+  employee_id INT NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+  document_type_id INT NOT NULL REFERENCES document_types(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'PENDING',
+  sent_at TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (employee_id, document_type_id),
+  CONSTRAINT employee_documents_status_chk CHECK (
+    status IN ('PENDING','SENT')
+  ),
+  CONSTRAINT employee_documents_sent_consistency CHECK (
     (status = 'PENDING' AND sent_at IS NULL)
     OR
     (status = 'SENT' AND sent_at IS NOT NULL)

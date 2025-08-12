@@ -1,33 +1,32 @@
 {
   "name": "inmeta-docs-api",
-  "private": true,
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc -p .",
+    "dev": "nodemon --watch src --ext ts --exec tsx src/server.ts",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "migrate": "tsx src/db/migrate.ts",
-    "test": "npm run migrate && jest --runInBand --config=jest.config.cjs"
+    "test": "npm run migrate && jest --runInBand",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "express-rate-limit": "^8.0.1",
-    "helmet": "^8.1.0",
+    "helmet": "^7.1.0",
     "pg": "^8.12.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
-    "@types/jest": "^29.5.14",
-    "@types/pg": "^8.15.5",
-    "@types/supertest": "^2.0.16",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.12",
     "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
     "supertest": "^7.0.0",
-    "ts-jest": "^29.4.1",
-    "tsx": "^4.16.2",
+    "ts-jest": "^29.2.3",
+    "tsx": "^4.15.7",
     "typescript": "^5.5.4"
   }
 }
