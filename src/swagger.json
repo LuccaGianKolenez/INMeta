@@ -1,8 +1,15 @@
 {
   "openapi": "3.0.3",
-  "info": { "title": "INMeta Docs API", "version": "1.0.0" },
+  "info": {
+    "title": "INMeta Docs API",
+    "version": "1.0.0"
+  },
   "paths": {
-    "/api/health": { "get": { "responses": { "200": { "description": "ok" } } } },
+    "/api/health": {
+      "get": {
+        "responses": { "200": { "description": "ok" } }
+      }
+    },
     "/api/document-types": {
       "get": { "responses": { "200": { "description": "list" } } },
       "post": { "responses": { "201": { "description": "created" } } }
@@ -12,7 +19,14 @@
     },
     "/api/employees/{id}": {
       "put": {
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
         "responses": { "200": { "description": "updated" } }
       }
     },
@@ -28,6 +42,24 @@
     "/api/documents/pending": {
       "get": { "responses": { "200": { "description": "pending list" } } }
     }
-    
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "status": { "type": "integer", "example": 400 },
+              "message": { "type": "string", "example": "ValidationError" },
+              "code": { "type": "string", "example": "VALIDATION" },
+              "details": { "nullable": true }
+            },
+            "required": ["status", "message"]
+          }
+        }
+      }
+    }
   }
 }
