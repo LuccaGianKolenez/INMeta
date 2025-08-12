@@ -1,0 +1,32 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "INMeta Docs API", "version": "1.0.0" },
+  "paths": {
+    "/api/health": { "get": { "responses": { "200": { "description": "ok" } } } },
+    "/api/document-types": {
+      "get": { "responses": { "200": { "description": "list" } } },
+      "post": { "responses": { "201": { "description": "created" } } }
+    },
+    "/api/employees": {
+      "post": { "responses": { "201": { "description": "created" } } }
+    },
+    "/api/employees/{id}": {
+      "put": {
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "updated" } }
+      }
+    },
+    "/api/employees/links": {
+      "post": { "responses": { "200": { "description": "upsert links" } } }
+    },
+    "/api/employees/{id}/documents-status": {
+      "get": { "responses": { "200": { "description": "status" } } }
+    },
+    "/api/documents/send": {
+      "post": { "responses": { "200": { "description": "sent" } } }
+    },
+    "/api/documents/pending": {
+      "get": { "responses": { "200": { "description": "pending list" } } }
+    }
+  }
+}
