@@ -11,6 +11,7 @@ import * as Docs from './modules/documents/document.controller.js';
 import { sendDocumentSchema } from './modules/documents/document.schemas.js';
 import * as EmpStatus from './modules/employees/employee.status.controller.js';
 import * as DocList from './modules/documents/document.list.controller.js';
+import { listPending as listPendingCtrl } from './modules/documents/pending.controller.js';
 
 const r = Router();
 
@@ -28,8 +29,10 @@ r.get('/employees/:id/documents-status', EmpStatus.documentsStatus);
 r.post('/documents/send', validate(sendDocumentSchema), Docs.sendDocument);
 r.get('/documents/pending', DocList.listPending);
 
-export default r;
+r.get('/api/documents/pending', listPendingCtrl);
 
+
+export default r;
 
 
 

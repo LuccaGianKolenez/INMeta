@@ -4,13 +4,16 @@ import { logger } from './middlewares/logger.js';
 import { errorHandler } from './middlewares/error.js';
 import r from './routes.js';
 import swaggerUi from 'swagger-ui-express';
-import swaggerDoc from './swagger.json' assert { type: 'json' };
+import { readFileSync } from 'fs';
+import path from 'path';
 
+const swaggerPath = path.join(process.cwd(), 'src', 'swagger.json');
+const swagger = JSON.parse(readFileSync(swaggerPath, 'utf8'));
 export function createApp() {
   const app = express();
   app.use(express.json());
   applySecurity(app);
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swagger));
   app.use(logger);
   app.use('/api', r);
   app.use(errorHandler);

@@ -10,7 +10,9 @@
     "outDir": "dist",
     "rootDir": "src",
     "isolatedModules": true,
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"]
 }

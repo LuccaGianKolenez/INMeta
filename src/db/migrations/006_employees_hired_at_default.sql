@@ -1,0 +1,3 @@
+ALTER TABLE employees
+  ALTER COLUMN hired_at DROP NOT NULL,
+  ALTER COLUMN hired_at SET DEFAULT NOW();
