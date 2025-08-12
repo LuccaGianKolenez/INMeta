@@ -7,6 +7,8 @@ import * as Employees from './modules/employees/employee.controller.js';
 import { createEmployeeSchema, updateEmployeeSchema } from './modules/employees/employee.schemas.js';
 import * as EmpLinks from './modules/employees/employee.links.controller.js';
 import { upsertLinksSchema } from './modules/employees/employee.links.schemas.js';
+import * as Docs from './modules/documents/document.controller.js';
+import { sendDocumentSchema } from './modules/documents/document.schemas.js';
 
 const r = Router();
 
@@ -19,6 +21,8 @@ r.get('/document-types', DocTypes.list);
 r.post('/employees', validate(createEmployeeSchema), Employees.create);
 r.put('/employees/:id', validate(updateEmployeeSchema), Employees.update);
 r.post('/employees/links', validate(upsertLinksSchema), EmpLinks.upsertLinks);
+
+r.post('/documents/send', validate(sendDocumentSchema), Docs.sendDocument);
 
 export default r;
 
