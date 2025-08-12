@@ -1,5 +1,13 @@
 import { query } from '../../db/db.js';
 
+export async function linkExists(employeeId: number, documentTypeId: number) {
+  const { rows } = await query(
+    `SELECT 1 FROM employee_documents WHERE employee_id=$1 AND document_type_id=$2`,
+    [employeeId, documentTypeId]
+  );
+  return rows.length > 0;
+}
+
 export async function markSent(employeeId: number, documentTypeId: number) {
   const { rows } = await query(
     `UPDATE employee_documents

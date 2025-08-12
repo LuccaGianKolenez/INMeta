@@ -32,3 +32,22 @@ export async function listPending(page: number, pageSize: number, filters: { emp
 
   return { data: data.rows, page, pageSize, total: Number(total.rows[0].total) };
 }
+
+export async function linkExists(employeeId: number, documentTypeId: number) {
+  const { rows } = await query(
+    `SELECT 1 FROM employee_documents WHERE employee_id=$1 AND document_type_id=$2`,
+    [employeeId, documentTypeId]
+  );
+  return rows.length > 0;
+}
+
+export async function markSent(employeeId: number, documentTypeId: number) {
+  const { rows } = await query(
+    `UPDATE employee_documents
+        SET status = 'SENT', sent_at = NOW(), updated_at = NOW()
+      WHERE employee_id = $1 AND document_type_id = $2
+      RETURNING employee_id, document_type_id, status, sent_at`,
+    [employeeId, documentTypeId]
+  );
+  return rows[0];
+}
