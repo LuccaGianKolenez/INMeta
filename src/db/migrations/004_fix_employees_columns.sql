@@ -1,0 +1,18 @@
+ALTER TABLE employees
+  ADD COLUMN IF NOT EXISTS document  TEXT,
+  ADD COLUMN IF NOT EXISTS hired_at  TIMESTAMP DEFAULT NOW(),
+  ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW(),
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW();
+
+CREATE OR REPLACE FUNCTION touch_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_employees_touch_updated ON employees;
+CREATE TRIGGER trg_employees_touch_updated
+BEFORE UPDATE ON employees
+FOR EACH ROW EXECUTE FUNCTION touch_updated_at();

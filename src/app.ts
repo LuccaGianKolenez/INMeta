@@ -4,7 +4,7 @@ import { logger } from './middlewares/logger.js';
 import { errorHandler } from './middlewares/error.js';
 import r from './routes.js';
 import swaggerUi from 'swagger-ui-express';
-import swaggerDoc from '../swagger.json' assert { type: 'json' };
+import swaggerDoc from './swagger.json' assert { type: 'json' };
 
 export function createApp() {
   const app = express();
